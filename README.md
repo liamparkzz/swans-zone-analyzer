@@ -51,6 +51,21 @@ python find_trace_combination.py --ssd configs/32gibx4-zone32mib/ssdconfig.xml -
 - 최초 스캔에서 zone별 비트를 만들고 이미 사용된 zone의 갱신은 건너뜁니다.
   이후 조합 비교는 파일별 bitmap으로 수행합니다. 중복 요청도 전체 파일의 비용에는 포함합니다.
 
+### Compact 포함·범위 밖 요청만 제외·쓰기 도달 확인
+
+```shell
+python find_trace_combination.py --ssd configs/32gibx4-zone16mib/ssdconfig.xml --swans configs/32gibx4-zone16mib/swansconfig.xml --root /path/to/MSRC1 /path/to/MSRC2 --out results/compact-zone16mib --include-compact --no-folding --outside-range skip-request --access writes --objective-requests in-range
+```
+
+- `--include-compact`는 compact와 대체 처리본을 후보에 포함합니다.
+- `--outside-range skip-request`는 사용자 범위 밖 요청만 제외합니다. 기본 `reject-file`은 해당 원본 파일 전체를 제외합니다.
+  두 경우 모두 주소를 다른 곳으로 접지 않습니다.
+- `--access writes`는 모든 user zone에 쓰기가 도달해야 하는 조건입니다. 기본은 read+write 합집합입니다.
+- `--objective-requests in-range`는 범위 내에 남은 **read+write 전체 요청수**를 최소화합니다.
+  기본 `source`는 필터링 전 원본 요청수를 비용으로 사용합니다.
+- 쓰기 전용 분석에는 주소 접기 비활성으로 만든 쓰기 bitmap이 필요합니다.
+  과거 주소 접기/접근 합집합 캐시를 쓰기 전용 bitmap으로 잘못 재사용하지 않습니다.
+
 ### 선택적 Windows 고속 파서
 
 Visual Studio C++ Build Tools가 설치된 PowerShell에서:

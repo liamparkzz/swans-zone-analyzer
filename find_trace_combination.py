@@ -85,6 +85,7 @@ def scan(path, geometry, no_folding=False):
         value = sum(1 << zone for zone, flag in enumerate(present) if flag)
         encoded[name] = {'used_zones': value.bit_count(), 'mask_hex': hex(value)}
     return {'path': str(path.resolve()), 'name': path.name, 'bytes': path.stat().st_size,
+            'scan_mode': 'NO_FOLDING' if no_folding else 'MQSIM_COMPATIBILITY',
             'mtime_ns': path.stat().st_mtime_ns, 'sha256': sha.hexdigest(), **stats,
             'devices': sorted(devices), 'max_original_end_bytes': max_end,
             'valid_for_native_replay': not (stats['crosses_capacity'] or stats['oversized_requests'] or stats['out_of_order_timestamps']),
@@ -99,25 +100,48 @@ def scan_native(path, geometry, binary, no_folding=False):
     if run.returncode:
         raise ValueError(f'{path}: native parser failed: {run.stderr}')
     record = json.loads(run.stdout)
-    record.update(path=str(path.resolve()), name=path.name, bytes=path.stat().st_size, mtime_ns=path.stat().st_mtime_ns)
+    record.update(path=str(path.resolve()), name=path.name, bytes=path.stat().st_size, mtime_ns=path.stat().st_mtime_ns,
+                  scan_mode='NO_FOLDING' if no_folding else 'MQSIM_COMPATIBILITY')
     return record
 
 
-def no_folding_result(records, geometry):
+def no_folding_result(records, geometry, skip_outside_requests=False, access='read-write', objective_requests='source'):
     # Entire originals must fit. Do not drop outside requests to make a file eligible.
-    eligible = [r for r in records if r['max_original_end_bytes'] <= geometry.capacity * 512
-                and not r['oversized_requests'] and not r['out_of_order_timestamps']]
-    result = solve(eligible, geometry.user_zones, mode='unfolded', strict=True)
-    union = 0
+    if skip_outside_requests:
+        eligible = [r for r in records if not r['oversized_requests']]
+    else:
+        eligible = [r for r in records if r['max_original_end_bytes'] <= geometry.capacity * 512
+                    and not r['oversized_requests'] and not r['out_of_order_timestamps']]
+    choices = []
     for row in eligible:
+        item = dict(row)
+        if access == 'writes':
+            if row.get('scan_mode') != 'NO_FOLDING' or 'writes' not in row['coverage']:
+                raise ValueError('write-only no-folding analysis needs an unfurled native/Python scan, not folded or read+write-only cached masks')
+            item['coverage'] = {'unfolded': row['coverage']['writes']}
+        if skip_outside_requests:
+            item.update(valid_for_native_replay=True, runtime_remapped_requests=0)
+        if objective_requests == 'in-range':
+            if skip_outside_requests and 'out_of_range_requests' not in row:
+                raise ValueError('in-range request objective needs exact range-filtered request counts')
+            item['requests'] = row['requests'] - row.get('out_of_range_requests', 0) - row['oversized_requests']
+        choices.append(item)
+    result = solve(choices, geometry.user_zones, mode='unfolded', strict=True)
+    union = 0
+    for row in choices:
         union |= int(row['coverage']['unfolded']['mask_hex'], 16)
-    result.update(address_folding='FORBIDDEN', whole_original_files=True,
+    result.update(address_folding='FORBIDDEN', whole_original_files=not skip_outside_requests,
+                  outside_request_policy='SKIP_REQUEST' if skip_outside_requests else 'REJECT_FILE',
+                  access=access,
+                  objective_count_basis='IN_RANGE_READ_PLUS_WRITE_REQUESTS_AFTER_FILTERING' if objective_requests == 'in-range' else 'ALL_SOURCE_REQUESTS_BEFORE_FILTERING',
                   user_zone_count=geometry.user_zones,
                   reserve_zone_count_excluded=geometry.total_zones-geometry.user_zones,
                   excluded_files=[{'name': r['name'], 'max_original_end_bytes': r['max_original_end_bytes']}
                                   for r in records if r not in eligible],
                   eligible_files=[{'name': r['name'], 'path': r['path'], 'requests': r['requests']}
                                   for r in eligible], per_ssd=[])
+    for selected in result.get('selected', []):
+        selected['source_requests'] = next(r['requests'] for r in eligible if r['path'] == selected['path'])
     for disk in range(geometry.ssd_count):
         used = sum(bool(union >> z & 1) for z in range(disk, geometry.user_zones, geometry.ssd_count))
         result['per_ssd'].append({'ssd_id': disk, 'used_user_zones': used,
@@ -222,15 +246,24 @@ def main():
     parser.add_argument('--native-parser', type=Path, help='optional compiled fast CSV parser')
     parser.add_argument('--no-folding', action='store_true', help='forbid address folding and require whole original files to fit')
     parser.add_argument('--coarsen-cache', type=Path, help='reuse smaller stripe=zone raw footprints for a larger no-folding zone')
+    parser.add_argument('--include-compact', action='store_true', help='include compact files and alternate processed versions')
+    parser.add_argument('--outside-range', choices=['reject-file', 'skip-request'], default='reject-file',
+                        help='no-folding policy for requests outside user capacity')
+    parser.add_argument('--access', choices=['read-write', 'writes'], default='read-write')
+    parser.add_argument('--objective-requests', choices=['source', 'in-range'], default='source')
     args = parser.parse_args()
+    if args.outside_range == 'skip-request' and not args.no_folding:
+        parser.error('--outside-range skip-request requires --no-folding')
+    if not args.no_folding and (args.access != 'read-write' or args.objective_requests != 'source'):
+        parser.error('--access writes and --objective-requests in-range require --no-folding')
     g, _ = load_geometry(args.ssd, args.swans)
     args.out.mkdir(parents=True, exist_ok=True)
     paths = sorted(set(p.resolve() for root in args.root for p in root.rglob('*.csv')))
-    excluded = [str(p) for p in paths if 'compact' in p.name.lower()]
-    paths = [p for p in paths if 'compact' not in p.name.lower()]
+    excluded = [str(p) for p in paths if 'compact' in p.name.lower()] if not args.include_compact else []
+    paths = [p for p in paths if str(p) not in excluded]
     originals = {p.with_name(p.stem.removesuffix('_original') + p.suffix) for p in paths if p.stem.endswith('_original')}
-    alternate_versions = [str(p) for p in paths if p in originals]
-    paths = [p for p in paths if p not in originals]
+    alternate_versions = [str(p) for p in paths if p in originals] if not args.include_compact else []
+    paths = [p for p in paths if str(p) not in alternate_versions]
     records = []
     cache_hits = 0
     start = time.monotonic()
@@ -242,10 +275,15 @@ def main():
         previous = json.loads(args.coarsen_cache.read_text(encoding='utf-8'))
         coarsened = {r['path']: r for r in coarsen_no_folding_records(previous['records'], Geometry(**previous['geometry']), g)}
     for index, path in enumerate(paths, 1):
-        cache_path = args.out / (hashlib.sha256(str(path).encode()).hexdigest()[:16] + '.scan.json')
+        suffix = '.nofold.scan.json' if args.no_folding else '.scan.json'
+        cache_path = args.out / (hashlib.sha256(str(path).encode()).hexdigest()[:16] + suffix)
         stat = path.stat()
-        cached = json.loads(cache_path.read_text()) if cache_path.exists() else None
+        cached = json.loads(cache_path.read_text(encoding='utf-8')) if cache_path.exists() else None
         reusable = coarsened.get(str(path))
+        if reusable and ((args.access == 'writes' and (reusable.get('scan_mode') != 'NO_FOLDING' or 'writes' not in reusable['coverage']))
+                         or (args.objective_requests == 'in-range' and ('out_of_range_requests' not in reusable
+                             or Geometry(**previous['geometry']).capacity != g.capacity))):
+            reusable = None
         if reusable and reusable['bytes'] == stat.st_size and reusable['mtime_ns'] == stat.st_mtime_ns:
             record = reusable
             cache_hits += 1
@@ -255,17 +293,19 @@ def main():
         else:
             record = scan_native(path, g, args.native_parser, args.no_folding) if args.native_parser else scan(path, g, args.no_folding)
             record['config_sha256'] = fingerprint
-            # A no-folding-only scan cannot replace a cache that promises folded masks.
-            if not args.no_folding:
-                cache_path.write_text(json.dumps(record, indent=2), encoding='utf-8')
+            cache_path.write_text(json.dumps(record, indent=2), encoding='utf-8')
         records.append(record)
         if not args.no_folding:
             print(f"{index}/{len(paths)} {path.name}: requests={record['requests']:,}, zones={record['coverage']['read_write']['used_zones']}/{g.user_zones}, remapped={record['runtime_remapped_requests']:,}, native_valid={record['valid_for_native_replay']}; elapsed={time.monotonic()-start:.1f}s", flush=True)
+        elif reusable is None and not cached:
+            print(f"{index}/{len(paths)} {path.name}: scanned={record['requests']:,}, in-range zones={record['coverage']['unfolded']['used_zones']}/{g.user_zones}; elapsed={time.monotonic()-start:.1f}s", flush=True)
     if args.no_folding:
-        result = no_folding_result(records, g)
+        result = no_folding_result(records, g, args.outside_range == 'skip-request', args.access, args.objective_requests)
         result.update(config_sha256=fingerprint, cache_hits=cache_hits, source_file_count=len(records),
                       elapsed_seconds=time.monotonic()-start, geometry=asdict(g),
-                      coarsened_from_cache=str(args.coarsen_cache) if args.coarsen_cache else None)
+                      coarsened_from_cache=str(args.coarsen_cache) if args.coarsen_cache else None,
+                      include_compact=args.include_compact)
+        (args.out / 'no-folding-footprints.json').write_text(json.dumps({'geometry': asdict(g), 'records': records}, ensure_ascii=False, indent=2), encoding='utf-8')
         (args.out / 'no-folding-results.json').write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
         (args.out / 'no-folding-empty-zones.txt').write_text(''.join(f'{z}\n' for z in result['unreachable_zone_ids']), encoding='utf-8')
         print(json.dumps({k: result[k] for k in ['status','candidate_count','all_candidates_used_zones','cache_hits','elapsed_seconds','per_ssd']}, indent=2))

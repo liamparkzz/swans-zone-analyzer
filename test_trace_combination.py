@@ -19,6 +19,28 @@ def record(name, mask, cost, remapped=0, valid=True):
 
 
 class CombinationTests(unittest.TestCase):
+    def test_filtered_request_objective_and_write_only_masks(self):
+        g = Geometry(1, 64, 64, 320, 256, 4, True, 'NVME')
+        a = record('many_outside', 15, 100)
+        b = record('in_range', 15, 20)
+        for row, outside, writes in [(a, 90, 3), (b, 0, 12)]:
+            row.update(max_original_end_bytes=g.capacity*512+1, oversized_requests=0,
+                       out_of_order_timestamps=0, out_of_range_requests=outside, scan_mode='NO_FOLDING')
+            row['coverage']['unfolded'] = row['coverage']['read_write']
+            row['coverage']['writes'] = {'mask_hex': hex(writes), 'used_zones': writes.bit_count()}
+        source = no_folding_result([a,b], g, True)
+        filtered = no_folding_result([a,b], g, True, objective_requests='in-range')
+        self.assertEqual(source['selected'][0]['name'], 'in_range')
+        self.assertEqual(filtered['selected'][0]['name'], 'many_outside')
+        self.assertEqual(filtered['objective_total_requests'], 10)
+        self.assertEqual(filtered['selected'][0]['source_requests'], 100)
+        write_only = no_folding_result([a,b], g, True, access='writes', objective_requests='in-range')
+        self.assertEqual(write_only['objective_total_requests'], 30)
+        self.assertEqual(len(write_only['selected']), 2)
+        a['scan_mode'] = 'MQSIM_COMPATIBILITY'
+        with self.assertRaisesRegex(ValueError, 'write-only no-folding'):
+            no_folding_result([a,b], g, True, access='writes')
+
     def test_coarsening_matches_direct_raw_scan_with_new_stripe_and_zone(self):
         old = Geometry(4, 8, 8, 128, 120, 15, True, 'NVME')
         new = Geometry(4, 16, 16, 128, 112, 7, True, 'NVME')
@@ -92,6 +114,12 @@ class CombinationTests(unittest.TestCase):
         self.assertEqual(result['all_candidates_used_zones'], 1)
         self.assertEqual(result['reserve_zone_count_excluded'], 1)
         self.assertEqual(result['unreachable_zone_ids'], [1, 2, 3])
+        filtered = no_folding_result([good, bad], g, skip_outside_requests=True)
+        self.assertEqual(filtered['status'], 'OPTIMAL')
+        self.assertEqual(filtered['candidate_count'], 2)
+        self.assertEqual(filtered['address_folding'], 'FORBIDDEN')
+        self.assertEqual(filtered['outside_request_policy'], 'SKIP_REQUEST')
+        self.assertEqual(filtered['all_candidates_used_zones'], 4)
 
     def test_cli_prefers_explicit_original_over_ambiguous_alternate(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -109,6 +137,30 @@ class CombinationTests(unittest.TestCase):
             self.assertEqual(report['records'][0]['name'], 'prn_0_original.csv')
             self.assertEqual(len(report['excluded_compact']), 1)
             self.assertEqual(len(report['excluded_alternate_versions_with_explicit_original']), 1)
+            run = subprocess.run([sys.executable, str(base / 'find_trace_combination.py'),
+                                  '--ssd', str(preset / 'ssdconfig.xml'), '--swans', str(preset / 'swansconfig.xml'),
+                                  '--root', str(root), '--out', str(root / 'include-report'),
+                                  '--include-compact', '--no-folding', '--outside-range', 'skip-request'],
+                                 capture_output=True, text=True)
+            self.assertEqual(run.returncode, 0, run.stderr)
+            included = json.loads((root / 'include-report/no-folding-results.json').read_text(encoding='utf-8'))
+            self.assertEqual(included['source_file_count'], 3)
+            self.assertTrue(included['include_compact'])
+            self.assertEqual(included['outside_request_policy'], 'SKIP_REQUEST')
+            for cache in (root/'include-report').glob('*.nofold.scan.json'):
+                content=json.loads(cache.read_text(encoding='utf-8'))
+                content['unicode_note']='한글 캐시'
+                cache.write_text(json.dumps(content,ensure_ascii=False),encoding='utf-8')
+            repeated = subprocess.run([sys.executable, str(base / 'find_trace_combination.py'),
+                                      '--ssd', str(preset / 'ssdconfig.xml'), '--swans', str(preset / 'swansconfig.xml'),
+                                      '--root', str(root), '--out', str(root/'include-report'),
+                                      '--include-compact', '--no-folding', '--outside-range', 'skip-request',
+                                      '--access','writes','--objective-requests','in-range'],
+                                     capture_output=True,text=True)
+            self.assertEqual(repeated.returncode,0,repeated.stderr)
+            rerun=json.loads((root/'include-report/no-folding-results.json').read_text(encoding='utf-8'))
+            self.assertEqual(rerun['cache_hits'],3)
+            self.assertEqual(rerun['objective_count_basis'],'IN_RANGE_READ_PLUS_WRITE_REQUESTS_AFTER_FILTERING')
 
     @unittest.skipUnless(Path(__file__).with_name('msrc_scan_native.exe').exists(), 'optional native parser not built')
     def test_native_parser_matches_python_across_chunk_boundary(self):

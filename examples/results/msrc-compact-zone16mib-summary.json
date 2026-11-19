@@ -1,0 +1,98 @@
+{
+  "zone_mib": 16,
+  "stripe_mib": 16,
+  "raw_ssd_gib": 32,
+  "ssd_count": 4,
+  "nand_op_ratio": 0.1,
+  "address_folding": "FORBIDDEN",
+  "outside_request_policy": "SKIP_REQUEST",
+  "coverage_access": "WRITES_ONLY",
+  "user_zones": 7368,
+  "reserve_zones_excluded": 4,
+  "candidate_count": 56,
+  "used_user_zones": 7368,
+  "empty_user_zones": 0,
+  "original_write_only_used_zones": 7281,
+  "original_write_only_empty_zones": 87,
+  "original_read_write_used_zones": 7368,
+  "original_read_write_empty_zones": 0,
+  "kept_read_plus_write_requests": 90897105,
+  "source_requests": 121341502,
+  "discarded_outside_requests": 30444397,
+  "selected": [
+    {
+      "name": "CAMRESSDPA03-lvm2.csv",
+      "sha256": "a1bfaf3642771a2d4ddd7eb531b734ee0aeb09673c213bd25aeddac0cd29dbd4",
+      "source_requests": 1156885,
+      "retained_read_plus_write_requests": 1139546,
+      "discarded_outside_requests": 17339
+    },
+    {
+      "name": "CAMRESSTGA01-lvm1.csv",
+      "sha256": "60661c7b3191435f4a1db1c4b4325a6ec9af3438bbe3f622b4d3d101845b5de3",
+      "source_requests": 2196861,
+      "retained_read_plus_write_requests": 2196861,
+      "discarded_outside_requests": 0
+    },
+    {
+      "name": "CAMRESWEBA03-lvm1.csv",
+      "sha256": "763c0867d32f3efaff31550f4b6386d71a4ad51a65de19c99aa6c45798c46548",
+      "source_requests": 160891,
+      "retained_read_plus_write_requests": 160891,
+      "discarded_outside_requests": 0
+    },
+    {
+      "name": "hm0prn0proj0_prxy0_compact.csv",
+      "sha256": "a68fb767657487f12c1bf43b62b97a638d2c6f3489905c539deb44a9bb9a375c",
+      "source_requests": 26322694,
+      "retained_read_plus_write_requests": 26322694,
+      "discarded_outside_requests": 0
+    },
+    {
+      "name": "prn0_prxy0_compact.csv",
+      "sha256": "f727a9cbb06174f6a4da948261578a6982511bcaf1d7ab8dc1af8e32b772f8f9",
+      "source_requests": 18104854,
+      "retained_read_plus_write_requests": 18104854,
+      "discarded_outside_requests": 0
+    },
+    {
+      "name": "prn_0_original.csv",
+      "sha256": "2f07f991803abefe54dc52e1a93f35cf771b721830ef219dc682bdf9aae3ccad",
+      "source_requests": 5585886,
+      "retained_read_plus_write_requests": 5585886,
+      "discarded_outside_requests": 0
+    },
+    {
+      "name": "prn_1.csv",
+      "sha256": "db1dba179e02637d33112562bb639e18867db716a5aa9e377997867322aff3c7",
+      "source_requests": 11233411,
+      "retained_read_plus_write_requests": 6516113,
+      "discarded_outside_requests": 4717298
+    },
+    {
+      "name": "proj0_prxy0_compact.csv",
+      "sha256": "c57fd5ef2ff35e5ac85dbe088db5381753914f8e701e3a96dad2951469ed9d0e",
+      "source_requests": 16743492,
+      "retained_read_plus_write_requests": 16743492,
+      "discarded_outside_requests": 0
+    },
+    {
+      "name": "proj_2.csv",
+      "sha256": "315f3597482d8f35e8aec62d2cded58830e79cc9dc4ff2eabee37e33939fe51a",
+      "source_requests": 29266482,
+      "retained_read_plus_write_requests": 12052085,
+      "discarded_outside_requests": 17214397
+    },
+    {
+      "name": "usr_2.csv",
+      "sha256": "cb53f1788a48f8775db35fec11d7b97768ea13e2ee8dbf9b435bbf9096d2b0aa",
+      "source_requests": 10570046,
+      "retained_read_plus_write_requests": 2074683,
+      "discarded_outside_requests": 8495363
+    }
+  ],
+  "objective": "MINIMIZE_IN_RANGE_READ_PLUS_WRITE_REQUESTS",
+  "proof": "exhaustive_branch_and_bound_over_minimal_zone_membership_constraints",
+  "minimal_constraints": 42,
+  "search_nodes": 69
+}
