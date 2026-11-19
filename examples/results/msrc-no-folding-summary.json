@@ -1,0 +1,363 @@
+{
+  "snapshot_date": "2026-11-19",
+  "source_commit": "5e9e2fe6d42831c23d6720bd3169735b5fbc628b",
+  "scope": "READ_WRITE_RAW_ADDRESS_FOOTPRINT_NO_FOLDING_WHOLE_ORIGINAL_FILES",
+  "ssd_raw_gib": 32,
+  "ssd_count": 4,
+  "nand_op_ratio": 0.1,
+  "reserve_zones_per_ssd": 1,
+  "original_candidate_count": 35,
+  "excluded_compact_count": 20,
+  "excluded_alternate_versions": [
+    "prn_0.csv"
+  ],
+  "scanned_original_requests": 265573044,
+  "cases": [
+    {
+      "zone_mib": 16,
+      "stripe_mib": 16,
+      "status": "INFEASIBLE",
+      "eligible_original_files": 20,
+      "total_user_zones": 7368,
+      "used_user_zones": 6336,
+      "empty_user_zones": 1032,
+      "reserve_zones_excluded": 4,
+      "per_ssd": [
+        {
+          "ssd_id": 0,
+          "used_user_zones": 1583,
+          "empty_user_zones": 259
+        },
+        {
+          "ssd_id": 1,
+          "used_user_zones": 1588,
+          "empty_user_zones": 254
+        },
+        {
+          "ssd_id": 2,
+          "used_user_zones": 1580,
+          "empty_user_zones": 262
+        },
+        {
+          "ssd_id": 3,
+          "used_user_zones": 1585,
+          "empty_user_zones": 257
+        }
+      ]
+    },
+    {
+      "zone_mib": 32,
+      "stripe_mib": 32,
+      "status": "INFEASIBLE",
+      "eligible_original_files": 20,
+      "total_user_zones": 3680,
+      "used_user_zones": 3189,
+      "empty_user_zones": 491,
+      "reserve_zones_excluded": 4,
+      "per_ssd": [
+        {
+          "ssd_id": 0,
+          "used_user_zones": 800,
+          "empty_user_zones": 120
+        },
+        {
+          "ssd_id": 1,
+          "used_user_zones": 795,
+          "empty_user_zones": 125
+        },
+        {
+          "ssd_id": 2,
+          "used_user_zones": 797,
+          "empty_user_zones": 123
+        },
+        {
+          "ssd_id": 3,
+          "used_user_zones": 797,
+          "empty_user_zones": 123
+        }
+      ]
+    }
+  ],
+  "trace_inventory": [
+    {
+      "dataset": "MSRC1",
+      "name": "CAM-01-SRV-lvm0.csv",
+      "sha256": "4ef9780d5fe015a51fbae4139c247c0fa9547e50b9900c76309165660812e497",
+      "requests": 2237889,
+      "reads": 904483,
+      "writes": 1333406
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAM-02-SRV-lvm3.csv",
+      "sha256": "d877923541672b8b27d8a0f227c67ade9c17cccd70592b41f42d32e264da1e93",
+      "requests": 2244644,
+      "reads": 2128303,
+      "writes": 116341
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAM-02-SRV-lvm4.csv",
+      "sha256": "01582a601ad097c2860a454906a16ff275661daff326d5b07a2916f82ad2281a",
+      "requests": 6465639,
+      "reads": 6369774,
+      "writes": 95865
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESHMSA01-lvm1.csv",
+      "sha256": "8fe90a67cbe8801ac2247e88fa141d22a515d17d42bf53d5192c0c984758968e",
+      "requests": 609311,
+      "reads": 580896,
+      "writes": 28415
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESIRA01-lvm0.csv",
+      "sha256": "806896a13d41d90db46fc2b68a99f46b054c3887df9e9b26974aca355d0adee6",
+      "requests": 1433655,
+      "reads": 133625,
+      "writes": 1300030
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESIRA01-lvm2.csv",
+      "sha256": "663d72e9d9345cbec5f4a5a097f94c4fbda372f018ee7556ca06fc09fef3e0a6",
+      "requests": 207587,
+      "reads": 136364,
+      "writes": 71223
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESSDPA01-lvm2.csv",
+      "sha256": "9bbe02ed72f8a92eb7835d4439cc494a4c1f718f0a9cf636ddb89516d9817e64",
+      "requests": 1907773,
+      "reads": 484079,
+      "writes": 1423694
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESSDPA03-lvm1.csv",
+      "sha256": "6e3827ce80592f928262c22a827d6a62449f48bfaef4b6c17e1e03d384297d85",
+      "requests": 657774,
+      "reads": 643670,
+      "writes": 14104
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESSDPA03-lvm2.csv",
+      "sha256": "a1bfaf3642771a2d4ddd7eb531b734ee0aeb09673c213bd25aeddac0cd29dbd4",
+      "requests": 1156885,
+      "reads": 350930,
+      "writes": 805955
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESSTGA01-lvm0.csv",
+      "sha256": "fc9d00950b903841f32108a04db403124b2a9964a9b15c7e68bc03ade4122297",
+      "requests": 2030915,
+      "reads": 308437,
+      "writes": 1722478
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESSTGA01-lvm1.csv",
+      "sha256": "60661c7b3191435f4a1db1c4b4325a6ec9af3438bbe3f622b4d3d101845b5de3",
+      "requests": 2196861,
+      "reads": 1400409,
+      "writes": 796452
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESTSA01-lvm0.csv",
+      "sha256": "e19ea7a44fd85b0e22cde48bfc79b7cb5b9e9a9292c2c7bc52c38c95e4515f16",
+      "requests": 1801734,
+      "reads": 316692,
+      "writes": 1485042
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESWEBA03-lvm0.csv",
+      "sha256": "fdc9cf1f0b6bc18afd5873a189dd82d3c5e51e77a8e19e662c406311eb61a05d",
+      "requests": 2029945,
+      "reads": 606487,
+      "writes": 1423458
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESWEBA03-lvm1.csv",
+      "sha256": "763c0867d32f3efaff31550f4b6386d71a4ad51a65de19c99aa6c45798c46548",
+      "requests": 160891,
+      "reads": 87058,
+      "writes": 73833
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESWEBA03-lvm2.csv",
+      "sha256": "e381a46e51b22d0ee9be4869a06d481950ab2cd43f7ef0bf6942fa38e0ac13cb",
+      "requests": 5175368,
+      "reads": 5136405,
+      "writes": 38963
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMRESWMSA03-lvm1.csv",
+      "sha256": "e10aeda42114f7bec95ef9f68f964b88242d1ccdde671fbc2e5175cb96e15807",
+      "requests": 1637711,
+      "reads": 1521035,
+      "writes": 116676
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMWEBDEV-lvm0.csv",
+      "sha256": "ec819d90d3cdab1639a36a824e703a209d50d9e31b82ad8d391079c90dde6faf",
+      "requests": 1143261,
+      "reads": 229529,
+      "writes": 913732
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMWEBDEV-lvm1.csv",
+      "sha256": "f80bb186cfa4b093565206c5c5dde1015018a21ebb0426b3b402c3388c14160a",
+      "requests": 1055,
+      "reads": 0,
+      "writes": 1055
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMWEBDEV-lvm2.csv",
+      "sha256": "28f26c9afb611a8a6e35fdeb4d271a25a9688b36effb8453cf826be007b5eb8a",
+      "requests": 181266,
+      "reads": 189,
+      "writes": 181077
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "CAMWEBDEV-lvm3.csv",
+      "sha256": "0de29f7e5edaba098877a5f578d4d55387adbb177b0c557754cd9df0326c7b0d",
+      "requests": 682,
+      "reads": 11,
+      "writes": 671
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "hm_0.csv",
+      "sha256": "e36f0734ec0c5599ed7264ac97bec9707ba1cec1a6c76d6989e7a23f6cc9e002",
+      "requests": 3993316,
+      "reads": 1417748,
+      "writes": 2575568
+    },
+    {
+      "dataset": "MSRC1",
+      "name": "mds_0.csv",
+      "sha256": "e0f910db63308c4982ceeae1ebd52be9f27de4ecdbf24ebe21f2ccf4ffde903a",
+      "requests": 1211034,
+      "reads": 143973,
+      "writes": 1067061
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "prn_0_original.csv",
+      "sha256": "2f07f991803abefe54dc52e1a93f35cf771b721830ef219dc682bdf9aae3ccad",
+      "requests": 5585886,
+      "reads": 602480,
+      "writes": 4983406
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "prn_1.csv",
+      "sha256": "db1dba179e02637d33112562bb639e18867db716a5aa9e377997867322aff3c7",
+      "requests": 11233411,
+      "reads": 8463801,
+      "writes": 2769610
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "proj_0.csv",
+      "sha256": "7cdb35cc889dff7950ab6e347a883a6c7ae967cf45c17cec3d7367b77f4aff78",
+      "requests": 4224524,
+      "reads": 527381,
+      "writes": 3697143
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "proj_1.csv",
+      "sha256": "a6961cdc5380ba5567972aa60ee18487cc89067dfd120bebefb6912feb6e815e",
+      "requests": 23639742,
+      "reads": 21142807,
+      "writes": 2496935
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "proj_2.csv",
+      "sha256": "315f3597482d8f35e8aec62d2cded58830e79cc9dc4ff2eabee37e33939fe51a",
+      "requests": 29266482,
+      "reads": 25641604,
+      "writes": 3624878
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "prxy_0.csv",
+      "sha256": "65227d1a77bdef5257fc9da26751214fc7e1fb2c344bb15c84b6dff910d84cc0",
+      "requests": 12518968,
+      "reads": 383524,
+      "writes": 12135444
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "rsrch_1.csv",
+      "sha256": "4310d76a35f27754d87d5e641e3e302b5c9df5a30384fe39966858b14e3f3187",
+      "requests": 13780,
+      "reads": 42,
+      "writes": 13738
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "src1_0.csv",
+      "sha256": "f91454a884e8dff1d050e3af61291b1f792e69ecc3c8f88f1a13aeca1d48155c",
+      "requests": 37415613,
+      "reads": 21112615,
+      "writes": 16302998
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "src1_1.csv",
+      "sha256": "a44bc10db7e88a50f55bfa69b4f1547ffa1156b982baf89f525f64b8d1563f71",
+      "requests": 45746222,
+      "reads": 43575951,
+      "writes": 2170271
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "src2_0.csv",
+      "sha256": "63961c1be685b25bf2a99799e881ebd22bc850c3e9091ea784c6dbb57e49ede0",
+      "requests": 1557814,
+      "reads": 176729,
+      "writes": 1381085
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "usr_1.csv",
+      "sha256": "a4f5ca473a65ce74b5f9dc64f1e60ca01eb8693c2195a62d6d136608d7ad4117",
+      "requests": 45283980,
+      "reads": 41426266,
+      "writes": 3857714
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "usr_2.csv",
+      "sha256": "cb53f1788a48f8775db35fec11d7b97768ea13e2ee8dbf9b435bbf9096d2b0aa",
+      "requests": 10570046,
+      "reads": 8575434,
+      "writes": 1994612
+    },
+    {
+      "dataset": "MSRC2",
+      "name": "web_3.csv",
+      "sha256": "68abc6ecbaf8b55c021c91d9894f51a67d22c1c0392de8833f2ea00906053ffe",
+      "requests": 31380,
+      "reads": 10050,
+      "writes": 21330
+    }
+  ]
+}
